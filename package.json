@@ -1,12 +1,17 @@
 {
-  "name": "my-turborepo",
+  "name": "chms-backend",
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=web",
+    "dev:api": "turbo run dev --filter=api",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "check-types": "turbo run check-types",
+    "db:generate": "turbo run db:generate --filter=@repo/db",
+    "db:migrate": "turbo run db:migrate --filter=@repo/db"
   },
   "devDependencies": {
     "prettier": "^3.7.4",
