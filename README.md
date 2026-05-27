@@ -7,7 +7,7 @@ Turborepo monorepo for the CHMS project.
 ### Apps
 
 - [`apps/web`](apps/web) — Next.js web app (port `3000`)
-- [`apps/api`](apps/api) — NestJS HTTP API (port `3001`)
+- [`apps/api`](apps/api) — Fastify HTTP API (port `3001`)
 
 ### Packages
 
@@ -34,7 +34,7 @@ Or run a single app:
 
 ```sh
 npm run dev:web        # Next.js on http://localhost:3000
-npm run dev:api        # NestJS on http://localhost:3001
+npm run dev:api        # Fastify on http://localhost:3001
 ```
 
 ## Common scripts
