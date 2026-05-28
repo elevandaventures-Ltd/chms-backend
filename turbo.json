@@ -1,7 +1,15 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
-  "globalEnv": ["NODE_ENV", "PORT", "HOST", "LOG_LEVEL", "DATABASE_URL"],
+  "globalEnv": [
+    "NODE_ENV",
+    "PORT",
+    "HOST",
+    "LOG_LEVEL",
+    "SUPABASE_URL",
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -15,14 +23,6 @@
       "dependsOn": ["^check-types"]
     },
     "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "db:generate": {
-      "cache": false,
-      "inputs": ["prisma/schema.prisma"]
-    },
-    "db:migrate": {
       "cache": false,
       "persistent": true
     }
