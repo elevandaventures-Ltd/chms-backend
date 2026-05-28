@@ -1,17 +1,28 @@
-import { PrismaClient } from "@prisma/client";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
+const globalForSupabase = globalThis as unknown as {
+  supabase: SupabaseClient | undefined;
 };
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-  });
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing environment variable: ${name}`);
+  }
+  return value;
 }
 
-export * from "@prisma/client";
+export function createSupabaseAdminClient(): SupabaseClient {
+  return createClient(requireEnv("SUPABASE_URL"), requireEnv("SUPABASE_SERVICE_ROLE_KEY"), {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
+export const supabase: SupabaseClient =
+  globalForSupabase.supabase ?? createSupabaseAdminClient();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForSupabase.supabase = supabase;
+}
+
+export type { SupabaseClient } from "@supabase/supabase-js";
