@@ -1,26 +1,24 @@
 # @repo/db
 
-Prisma database client for the CHMS monorepo.
+Supabase client for the CHMS monorepo. Schema is managed in [`supabase/migrations`](../../supabase/migrations); this package only exposes a typed `@supabase/supabase-js` client.
 
-## Setup
+## Required env
 
-Set `DATABASE_URL` in the consumer app's environment, e.g.:
+Consumers must set:
 
 ```
-DATABASE_URL="postgresql://user:password@localhost:5432/chms"
+SUPABASE_URL=http://127.0.0.1:54321
+SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
-## Commands
-
-- `npm run db:generate` — generate the Prisma client
-- `npm run db:migrate` — create and apply a dev migration
-- `npm run db:deploy` — apply pending migrations (production)
-- `npm run db:studio` — open Prisma Studio
+Both values are printed by `supabase start` / `supabase status` in the root of the repo.
 
 ## Usage
 
 ```ts
-import { prisma } from "@repo/db";
+import { supabase } from "@repo/db";
 
-const users = await prisma.user.findMany();
+const { data, error } = await supabase.from("churches").select("*");
 ```
+
+The exported `supabase` client uses the **service role** key and bypasses RLS. Only import it from server-side code.
