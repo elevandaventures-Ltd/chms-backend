@@ -53,18 +53,18 @@ npm run dev:api        # Fastify on http://localhost:3001
 
 ## Common scripts
 
-| Script                          | Purpose                                       |
-| ------------------------------- | --------------------------------------------- |
-| `npm run build`                 | Build every workspace                         |
-| `npm run lint`                  | Lint every workspace                          |
-| `npm run check-types`           | Type-check every workspace                    |
-| `npm run format`                | Format the repo with Prettier                 |
-| `npm run format:check`          | Verify formatting without writing             |
-| `npm run supabase:start`        | Start the local Supabase stack (Docker)       |
-| `npm run supabase:stop`         | Stop the local Supabase stack                 |
-| `npm run supabase:status`       | Print URLs and keys for the local stack       |
-| `npm run supabase:reset`        | Drop the local DB and re-apply all migrations |
-| `npm run supabase:migration:new <name>` | Create a new timestamped migration file |
+| Script                                  | Purpose                                       |
+| --------------------------------------- | --------------------------------------------- |
+| `npm run build`                         | Build every workspace                         |
+| `npm run lint`                          | Lint every workspace                          |
+| `npm run check-types`                   | Type-check every workspace                    |
+| `npm run format`                        | Format the repo with Prettier                 |
+| `npm run format:check`                  | Verify formatting without writing             |
+| `npm run supabase:start`                | Start the local Supabase stack (Docker)       |
+| `npm run supabase:stop`                 | Stop the local Supabase stack                 |
+| `npm run supabase:status`               | Print URLs and keys for the local stack       |
+| `npm run supabase:reset`                | Drop the local DB and re-apply all migrations |
+| `npm run supabase:migration:new <name>` | Create a new timestamped migration file       |
 
 ## Tooling
 

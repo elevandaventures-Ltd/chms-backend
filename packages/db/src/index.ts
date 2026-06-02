@@ -18,8 +18,7 @@ export function createSupabaseAdminClient(): SupabaseClient {
   });
 }
 
-export const supabase: SupabaseClient =
-  globalForSupabase.supabase ?? createSupabaseAdminClient();
+export const supabase: SupabaseClient = globalForSupabase.supabase ?? createSupabaseAdminClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForSupabase.supabase = supabase;
