@@ -1,0 +1,70 @@
+version: 2.1
+
+# CircleCI pipeline for chms-backend (Turborepo monorepo).
+#
+# Mirrors the previous GitHub Actions pipeline:
+#   format-check -> lint -> type-check -> test -> build
+#
+# To enable: connect this repo in the CircleCI dashboard (Projects -> Set Up Project).
+# Optional project env vars / contexts for Turborepo remote caching:
+#   - TURBO_TOKEN
+#   - TURBO_TEAM
+
+orbs:
+  node: circleci/node@5.3.0
+
+executors:
+  node-22:
+    docker:
+      - image: cimg/node:22.11
+    resource_class: medium
+    environment:
+      TURBO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  verify:
+    executor: node-22
+    steps:
+      - checkout
+
+      - node/install-packages:
+          pkg-manager: npm
+          cache-version: v1
+
+      - restore_cache:
+          name: Restore Turborepo cache
+          keys:
+            - turbo-cache-{{ .Branch }}-{{ .Revision }}
+            - turbo-cache-{{ .Branch }}-
+            - turbo-cache-
+
+      - run:
+          name: Check formatting
+          command: npm run format:check
+
+      - run:
+          name: Lint
+          command: npm run lint
+
+      - run:
+          name: Type check
+          command: npm run check-types
+
+      - run:
+          name: Test
+          command: npm test
+
+      - run:
+          name: Build
+          command: npm run build
+
+      - save_cache:
+          name: Save Turborepo cache
+          key: turbo-cache-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .turbo
+
+workflows:
+  ci:
+    jobs:
+      - verify
