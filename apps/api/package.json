@@ -9,7 +9,8 @@
     "start": "tsx src/server.ts",
     "build": "tsc --noEmit",
     "lint": "eslint --max-warnings 0 \"src/**/*.ts\"",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@repo/db": "*",
@@ -21,6 +22,7 @@
     "@types/node": "^22.15.3",
     "eslint": "^9.39.1",
     "tsx": "^4.19.2",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "vitest": "^3.2.4"
   }
 }
