@@ -1,23 +1,24 @@
 -- Migration: update user_role enum to match RBAC hierarchy in execution plan.
 -- Renames 'pastor' → 'senior_pastor', 'leader' → 'ministry_leader', and adds
 -- 'admin_staff' and 'finance_officer'.
+--
+-- PostgreSQL forbids using a value added via ALTER TYPE ... ADD VALUE in the
+-- same transaction it was added (SQLSTATE 55P04), and each migration runs in a
+-- single transaction. Since we replace the type wholesale below, we don't add
+-- values at all: we drop to text, rewrite the retired values as plain text,
+-- then swap in a fresh enum.
 
--- Step 1: add the new values before dropping the old ones (enum values cannot
--- be removed in a single ALTER; we rename via a new type swap instead).
+-- Step 1: drop the default so the column type can be changed freely.
+alter table public.user_roles alter column role drop default;
 
-alter type public.user_role add value if not exists 'senior_pastor';
-alter type public.user_role add value if not exists 'admin_staff';
-alter type public.user_role add value if not exists 'ministry_leader';
-alter type public.user_role add value if not exists 'finance_officer';
+-- Step 2: move to text so values can be rewritten without enum constraints.
+alter table public.user_roles alter column role type text;
 
--- Step 2: migrate any existing rows that use the old values.
+-- Step 3: migrate any rows using the retired values.
 update public.user_roles set role = 'senior_pastor'   where role = 'pastor';
 update public.user_roles set role = 'ministry_leader' where role = 'leader';
 
--- Step 3: swap to a clean enum that omits the retired values.
--- PostgreSQL does not support DROP VALUE, so we replace the type entirely.
-alter table public.user_roles alter column role type text;
-
+-- Step 4: replace the type with the new RBAC set (PostgreSQL has no DROP VALUE).
 drop type public.user_role;
 
 create type public.user_role as enum (
@@ -30,8 +31,8 @@ create type public.user_role as enum (
   'member'
 );
 
+-- Step 5: convert the column back to the enum and restore the default.
 alter table public.user_roles
   alter column role type public.user_role using role::public.user_role;
 
--- Restore the default that was set in the init migration.
 alter table public.user_roles alter column role set default 'member';
