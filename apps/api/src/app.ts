@@ -5,6 +5,7 @@ import { config } from "./config.js";
 import { authPlugin } from "./plugins/auth.js";
 import { healthRoutes } from "./routes/health.js";
 import { authRoutes } from "./routes/auth.js";
+import { churchesRoutes } from "./routes/churches.js";
 
 export function buildApp(): FastifyInstance {
   const app = Fastify({
@@ -36,6 +37,7 @@ export function buildApp(): FastifyInstance {
 
   app.register(healthRoutes);
   app.register(authRoutes);
+  app.register(churchesRoutes);
 
   return app;
 }

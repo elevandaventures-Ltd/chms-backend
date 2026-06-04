@@ -34,6 +34,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      church_profiles: {
+        Row: {
+          church_id: string
+          created_at: string
+          custom_fields: Json
+          denomination: string | null
+          logo_url: string | null
+          primary_color: string
+          secondary_color: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          custom_fields?: Json
+          denomination?: string | null
+          logo_url?: string | null
+          primary_color?: string
+          secondary_color?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          custom_fields?: Json
+          denomination?: string | null
+          logo_url?: string | null
+          primary_color?: string
+          secondary_color?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "church_profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: true
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       churches: {
         Row: {
           created_at: string
@@ -132,10 +176,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_church_with_owner: {
+        Args: {
+          p_owner_id: string
+          p_name: string
+          p_slug: string
+          p_timezone?: string
+          p_locale?: string
+          p_denomination?: string | null
+          p_logo_url?: string | null
+          p_primary_color?: string
+          p_secondary_color?: string
+          p_custom_fields?: Json
+        }
+        Returns: Database["public"]["Tables"]["churches"]["Row"]
+      }
     }
     Enums: {
-      user_role: "owner" | "admin" | "pastor" | "leader" | "member"
+      user_role:
+        | "owner"
+        | "admin"
+        | "senior_pastor"
+        | "admin_staff"
+        | "ministry_leader"
+        | "finance_officer"
+        | "member"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -266,7 +331,15 @@ export const Constants = {
   },
   public: {
     Enums: {
-      user_role: ["owner", "admin", "pastor", "leader", "member"],
+      user_role: [
+        "owner",
+        "admin",
+        "senior_pastor",
+        "admin_staff",
+        "ministry_leader",
+        "finance_officer",
+        "member",
+      ],
     },
   },
 } as const

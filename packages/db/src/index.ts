@@ -42,5 +42,5 @@ export function createSupabaseUserClient(accessToken: string): SupabaseClient<Da
   });
 }
 
-export type { Database } from "./types";
+export type { Database, Json } from "./types";
 export type { SupabaseClient } from "@supabase/supabase-js";
