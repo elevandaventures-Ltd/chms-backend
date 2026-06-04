@@ -1,0 +1,61 @@
+-- Migration 002: RLS policy stubs.
+--
+-- RLS is enabled on public.churches, public.users, and public.user_roles in
+-- 20260528115557_init.sql, but no policies are defined. With RLS on and zero
+-- policies, anon-key requests are denied by default and silently return empty
+-- result sets -- which is easy to mistake for a bug in the query, the client,
+-- or the data.
+--
+-- This file intentionally creates NO policies. It documents the intended
+-- patterns so that:
+--   1. Future devs (and future-us) know what the access model is supposed to
+--      look like, and
+--   2. When we're ready to enforce it, we can uncomment + adjust rather than
+--      designing from scratch.
+--
+-- The patterns below assume `church_id` is carried as a custom JWT claim,
+-- populated by a Supabase auth hook on sign-in. If the auth model changes
+-- (e.g. resolving church scope via public.user_roles instead), the stubs
+-- need to be updated accordingly before being uncommented.
+
+-- churches -------------------------------------------------------------------
+-- A signed-in user can only see the church identified by their JWT claim.
+--
+-- CREATE POLICY church_isolation ON public.churches
+--   FOR SELECT
+--   USING (id = (auth.jwt()->>'church_id')::uuid);
+
+-- users ----------------------------------------------------------------------
+-- A user can read and update their own profile row. Cross-user visibility
+-- inside a church will likely be layered on top (e.g. a directory policy) but
+-- is intentionally omitted here until we lock down what fields are public.
+--
+-- CREATE POLICY users_self_select ON public.users
+--   FOR SELECT
+--   USING (id = auth.uid());
+--
+-- CREATE POLICY users_self_update ON public.users
+--   FOR UPDATE
+--   USING (id = auth.uid())
+--   WITH CHECK (id = auth.uid());
+
+-- user_roles -----------------------------------------------------------------
+-- A user can see their own role rows. Church owners/admins can see every role
+-- row scoped to their church (per the JWT claim) so they can manage members.
+--
+-- CREATE POLICY user_roles_self ON public.user_roles
+--   FOR SELECT
+--   USING (user_id = auth.uid());
+--
+-- CREATE POLICY user_roles_church_admin ON public.user_roles
+--   FOR SELECT
+--   USING (
+--     church_id = (auth.jwt()->>'church_id')::uuid
+--     AND EXISTS (
+--       SELECT 1
+--       FROM public.user_roles r
+--       WHERE r.user_id = auth.uid()
+--         AND r.church_id = public.user_roles.church_id
+--         AND r.role IN ('owner', 'admin')
+--     )
+--   );
