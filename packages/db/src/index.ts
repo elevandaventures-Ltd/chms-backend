@@ -1,8 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-
-const globalForSupabase = globalThis as unknown as {
-  supabase: SupabaseClient | undefined;
-};
+import type { Database } from "./types";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -12,16 +9,38 @@ function requireEnv(name: string): string {
   return value;
 }
 
-export function createSupabaseAdminClient(): SupabaseClient {
-  return createClient(requireEnv("SUPABASE_URL"), requireEnv("SUPABASE_SERVICE_ROLE_KEY"), {
+/**
+ * Service-role client — bypasses RLS. Use only in trusted server-side code.
+ */
+export function createSupabaseAdminClient(): SupabaseClient<Database> {
+  return createClient<Database>(
+    requireEnv("SUPABASE_URL"),
+    requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
+    { auth: { persistSession: false, autoRefreshToken: false } },
+  );
+}
+
+/**
+ * Anon client — subject to RLS, uses the public anon key.
+ * Safe to instantiate on the server when no user session is available.
+ */
+export function createSupabaseAnonClient(): SupabaseClient<Database> {
+  return createClient<Database>(requireEnv("SUPABASE_URL"), requireEnv("SUPABASE_ANON_KEY"), {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
 
-export const supabase: SupabaseClient = globalForSupabase.supabase ?? createSupabaseAdminClient();
-
-if (process.env.NODE_ENV !== "production") {
-  globalForSupabase.supabase = supabase;
+/**
+ * User-scoped client — subject to RLS, authenticated via the caller's JWT.
+ * Pass the Bearer token from the incoming request so RLS policies evaluate
+ * against the real user identity.
+ */
+export function createSupabaseUserClient(accessToken: string): SupabaseClient<Database> {
+  return createClient<Database>(requireEnv("SUPABASE_URL"), requireEnv("SUPABASE_ANON_KEY"), {
+    global: { headers: { Authorization: `Bearer ${accessToken}` } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
+export type { Database } from "./types";
 export type { SupabaseClient } from "@supabase/supabase-js";
