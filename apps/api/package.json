@@ -10,7 +10,8 @@
     "build": "tsc --noEmit",
     "lint": "eslint --max-warnings 0 \"src/**/*.ts\"",
     "check-types": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
