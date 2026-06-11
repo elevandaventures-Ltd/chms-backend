@@ -2,6 +2,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import { config } from "./config.js";
+import { swaggerPlugin } from "./plugins/swagger.js";
 import { authPlugin } from "./plugins/auth.js";
 import { healthRoutes } from "./routes/health.js";
 import { authRoutes } from "./routes/auth.js";
@@ -32,6 +33,10 @@ export function buildApp(): FastifyInstance {
     max: config.rateLimit.max,
     timeWindow: config.rateLimit.timeWindow,
   });
+
+  // OpenAPI doc generation + Swagger UI at /docs. Registered before the routes
+  // so their schemas are captured in the generated spec.
+  app.register(swaggerPlugin);
 
   // JWT verification + request.auth extraction.
   app.register(authPlugin);

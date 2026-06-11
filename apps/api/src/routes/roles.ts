@@ -49,6 +49,28 @@ const removeRoleParamsSchema = {
   },
 } as const;
 
+// Shared shape of every error reply ({ error, message }) for the OpenAPI doc.
+const errorResponseSchema = {
+  type: "object",
+  properties: {
+    error: { type: "string" },
+    message: { type: "string" },
+  },
+} as const;
+
+const roleAssignmentSchema = {
+  type: "object",
+  properties: {
+    id: { type: "string", format: "uuid" },
+    userId: { type: "string", format: "uuid" },
+    churchId: { type: "string", format: "uuid" },
+    roleKey: { type: "string", enum: ROLE_KEYS },
+    roleName: { type: "string" },
+    assignedBy: { type: "string", format: "uuid", nullable: true },
+    createdAt: { type: "string" },
+  },
+} as const;
+
 export async function rolesRoutes(app: FastifyInstance): Promise<void> {
   /**
    * Assign a role to a member of the caller's church. The church is taken from
@@ -61,7 +83,29 @@ export async function rolesRoutes(app: FastifyInstance): Promise<void> {
     "/role-assignments",
     {
       onRequest: [app.authenticate, requirePermission("roles.assign")],
-      schema: { body: assignRoleSchema },
+      schema: {
+        tags: ["roles"],
+        summary: "Assign a role",
+        description:
+          "Assigns a role to a member of the caller's church. Requires the roles.assign permission. The church is taken from the caller's JWT.",
+        security: [{ bearerAuth: [] }],
+        body: assignRoleSchema,
+        response: {
+          201: {
+            type: "object",
+            properties: {
+              assignment: roleAssignmentSchema,
+              message: { type: "string" },
+            },
+          },
+          400: errorResponseSchema,
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          404: errorResponseSchema,
+          409: errorResponseSchema,
+          500: errorResponseSchema,
+        },
+      },
     },
     async (req, reply) => {
       const auth = requireChurchScopedAuth(req, reply);
@@ -157,7 +201,25 @@ export async function rolesRoutes(app: FastifyInstance): Promise<void> {
     "/role-assignments/:userId/:roleKey",
     {
       onRequest: [app.authenticate, requirePermission("roles.assign")],
-      schema: { params: removeRoleParamsSchema },
+      schema: {
+        tags: ["roles"],
+        summary: "Remove a role",
+        description:
+          "Removes a specific role from a member of the caller's church. Requires the roles.assign permission.",
+        security: [{ bearerAuth: [] }],
+        params: removeRoleParamsSchema,
+        response: {
+          200: {
+            type: "object",
+            properties: { message: { type: "string" } },
+          },
+          400: errorResponseSchema,
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          404: errorResponseSchema,
+          500: errorResponseSchema,
+        },
+      },
     },
     async (req, reply) => {
       const auth = requireChurchScopedAuth(req, reply);
@@ -214,7 +276,27 @@ export async function rolesRoutes(app: FastifyInstance): Promise<void> {
    */
   app.get(
     "/role-assignments",
-    { onRequest: [app.authenticate, requirePermission("roles.read")] },
+    {
+      onRequest: [app.authenticate, requirePermission("roles.read")],
+      schema: {
+        tags: ["roles"],
+        summary: "List role assignments",
+        description:
+          "Lists every role assignment in the caller's church. Requires the roles.read permission.",
+        security: [{ bearerAuth: [] }],
+        response: {
+          200: {
+            type: "object",
+            properties: {
+              assignments: { type: "array", items: roleAssignmentSchema },
+            },
+          },
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          500: errorResponseSchema,
+        },
+      },
+    },
     async (req, reply) => {
       const auth = requireChurchScopedAuth(req, reply);
       if (!auth) return reply;

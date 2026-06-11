@@ -1,0 +1,162 @@
+0{
+  "info": {
+    "name": "CHMS API",
+    "description": "Church Management System API. Local base URL defaults to http://localhost:3001.\n\nAuth flow: POST /auth/login (or /auth/signup) returns an access_token. The Login request has a test script that saves it to the {{accessToken}} collection variable, which protected requests send as `Authorization: Bearer {{accessToken}}`.\n\nNote: role-assignment routes require the JWT to carry church_id + user_role claims (set by the Supabase access-token hook / a seeded user). A freshly signed-up user's token will hit 403 NoChurchContext.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3001", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "userId", "value": "11111111-1111-1111-1111-111111111111", "type": "string" },
+    { "key": "roleKey", "value": "ministry_leader", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/", "host": ["{{baseUrl}}"], "path": [""] }
+          }
+        },
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Sign up",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"pastor@grace.test\",\n  \"password\": \"Passw0rd!23\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/signup", "host": ["{{baseUrl}}"], "path": ["auth", "signup"] }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.access_token) {",
+                  "    pm.collectionVariables.set('accessToken', json.access_token);",
+                  "    console.log('Saved accessToken');",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"pastor@grace.test\",\n  \"password\": \"Passw0rd!23\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Magic link",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"pastor@grace.test\",\n  \"redirectTo\": \"http://localhost:3000/welcome\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/magic-link", "host": ["{{baseUrl}}"], "path": ["auth", "magic-link"] }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Churches",
+      "item": [
+        {
+          "name": "Create church",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Grace Community Church\",\n  \"slug\": \"grace-community\",\n  \"timezone\": \"America/New_York\",\n  \"locale\": \"en-US\",\n  \"denomination\": \"Baptist\",\n  \"logoUrl\": \"https://example.com/logo.png\",\n  \"primaryColor\": \"#1a2b3c\",\n  \"secondaryColor\": \"#ffcc00\",\n  \"customFields\": {\n    \"foundedYear\": 1998\n  }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/churches", "host": ["{{baseUrl}}"], "path": ["churches"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Role assignments",
+      "item": [
+        {
+          "name": "Assign role",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"roleKey\": \"{{roleKey}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/role-assignments", "host": ["{{baseUrl}}"], "path": ["role-assignments"] }
+          }
+        },
+        {
+          "name": "List role assignments",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/role-assignments", "host": ["{{baseUrl}}"], "path": ["role-assignments"] }
+          }
+        },
+        {
+          "name": "Remove role",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/role-assignments/{{userId}}/{{roleKey}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["role-assignments", "{{userId}}", "{{roleKey}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

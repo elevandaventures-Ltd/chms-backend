@@ -25,6 +25,15 @@ const credentialsSchema = {
   },
 } as const;
 
+// Shared shape of every error reply ({ error, message }) for the OpenAPI doc.
+const errorResponseSchema = {
+  type: "object",
+  properties: {
+    error: { type: "string" },
+    message: { type: "string" },
+  },
+} as const;
+
 interface MagicLinkBody {
   email: string;
   redirectTo?: string;
@@ -47,7 +56,22 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
    */
   app.post(
     "/auth/magic-link",
-    { ...authRateLimit, schema: { body: magicLinkSchema } },
+    {
+      ...authRateLimit,
+      schema: {
+        tags: ["auth"],
+        summary: "Request a magic link",
+        description:
+          "Sends a passwordless sign-in link. Always responds 200 so callers cannot probe which emails are registered.",
+        body: magicLinkSchema,
+        response: {
+          200: {
+            type: "object",
+            properties: { message: { type: "string" } },
+          },
+        },
+      },
+    },
     async (req, reply) => {
       const { email, redirectTo } = req.body as MagicLinkBody;
       const supabase = createSupabaseAnonClient();
@@ -70,7 +94,31 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   /** Register a new user with email + password. */
   app.post(
     "/auth/signup",
-    { ...authRateLimit, schema: { body: credentialsSchema } },
+    {
+      ...authRateLimit,
+      schema: {
+        tags: ["auth"],
+        summary: "Sign up with email and password",
+        body: credentialsSchema,
+        response: {
+          201: {
+            type: "object",
+            properties: {
+              user: {
+                type: "object",
+                nullable: true,
+                properties: {
+                  id: { type: "string", format: "uuid" },
+                  email: { type: "string", nullable: true },
+                },
+              },
+              session: { type: "object", nullable: true, additionalProperties: true },
+            },
+          },
+          400: errorResponseSchema,
+        },
+      },
+    },
     async (req, reply) => {
       const { email, password } = req.body as CredentialsBody;
       const supabase = createSupabaseAnonClient();
@@ -92,7 +140,33 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   /** Log in with email + password, returning a Supabase session. */
   app.post(
     "/auth/login",
-    { ...authRateLimit, schema: { body: credentialsSchema } },
+    {
+      ...authRateLimit,
+      schema: {
+        tags: ["auth"],
+        summary: "Log in with email and password",
+        description: "Returns a Supabase session (access + refresh tokens) on success.",
+        body: credentialsSchema,
+        response: {
+          200: {
+            type: "object",
+            properties: {
+              access_token: { type: "string" },
+              refresh_token: { type: "string" },
+              expires_at: { type: "number", nullable: true },
+              user: {
+                type: "object",
+                properties: {
+                  id: { type: "string", format: "uuid" },
+                  email: { type: "string", nullable: true },
+                },
+              },
+            },
+          },
+          401: errorResponseSchema,
+        },
+      },
+    },
     async (req, reply) => {
       const { email, password } = req.body as CredentialsBody;
       const supabase = createSupabaseAnonClient();
@@ -117,7 +191,37 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   );
 
   /** Returns the identity decoded from the bearer token. Protected. */
-  app.get("/auth/me", { onRequest: [app.authenticate] }, async (req) => {
-    return { user: req.auth };
-  });
+  app.get(
+    "/auth/me",
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ["auth"],
+        summary: "Current identity",
+        description: "Returns the identity decoded from the bearer token.",
+        security: [{ bearerAuth: [] }],
+        response: {
+          200: {
+            type: "object",
+            properties: {
+              user: {
+                type: "object",
+                nullable: true,
+                properties: {
+                  userId: { type: "string", format: "uuid" },
+                  email: { type: "string", nullable: true },
+                  churchId: { type: "string", nullable: true },
+                  role: { type: "string", nullable: true },
+                },
+              },
+            },
+          },
+          401: errorResponseSchema,
+        },
+      },
+    },
+    async (req) => {
+      return { user: req.auth };
+    },
+  );
 }

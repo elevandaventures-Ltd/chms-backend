@@ -16,6 +16,8 @@
   "dependencies": {
     "@fastify/cors": "^10.0.1",
     "@fastify/rate-limit": "^10.1.1",
+    "@fastify/swagger": "^9.7.0",
+    "@fastify/swagger-ui": "^5.2.6",
     "@repo/api-types": "*",
     "@repo/db": "*",
     "@sentry/node": "^10.56.0",

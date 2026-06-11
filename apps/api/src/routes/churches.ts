@@ -23,6 +23,24 @@ const createChurchSchema = {
   },
 } as const;
 
+// Shared shape of every error reply ({ error, message }) for the OpenAPI doc.
+const errorResponseSchema = {
+  type: "object",
+  properties: {
+    error: { type: "string" },
+    message: { type: "string" },
+  },
+} as const;
+
+const createChurchResponseSchema = {
+  type: "object",
+  properties: {
+    church: { type: "object", additionalProperties: true },
+    role: { type: "string", example: "owner" },
+    message: { type: "string" },
+  },
+} as const;
+
 // Postgres unique_violation — surfaced by supabase-js as error.code.
 const PG_UNIQUE_VIOLATION = "23505";
 
@@ -56,7 +74,21 @@ export async function churchesRoutes(app: FastifyInstance): Promise<void> {
     {
       ...registrationRateLimit,
       onRequest: [app.authenticate],
-      schema: { body: createChurchSchema },
+      schema: {
+        tags: ["churches"],
+        summary: "Register a new church",
+        description:
+          "Creates a church (tenant); the authenticated caller becomes its owner. Provisioning is atomic.",
+        security: [{ bearerAuth: [] }],
+        body: createChurchSchema,
+        response: {
+          201: createChurchResponseSchema,
+          400: errorResponseSchema,
+          401: errorResponseSchema,
+          409: errorResponseSchema,
+          500: errorResponseSchema,
+        },
+      },
     },
     async (req, reply) => {
       const auth = req.auth;
