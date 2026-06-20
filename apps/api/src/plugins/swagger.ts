@@ -1,6 +1,7 @@
 import fp from "fastify-plugin";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
+import { zodSwaggerTransform } from "../lib/zod.js";
 
 /**
  * OpenAPI generation + Swagger UI. `@fastify/swagger` reads the JSON Schemas
@@ -14,6 +15,8 @@ import swaggerUi from "@fastify/swagger-ui";
 export const swaggerPlugin = fp(
   async (app) => {
     await app.register(swagger, {
+      // Convert zod-route schemas to OpenAPI; JSON-Schema routes pass through.
+      transform: zodSwaggerTransform,
       openapi: {
         info: {
           title: "CHMS API",
@@ -35,6 +38,9 @@ export const swaggerPlugin = fp(
           { name: "auth", description: "Authentication and identity" },
           { name: "churches", description: "Church (tenant) provisioning" },
           { name: "roles", description: "Role assignments within a church" },
+          { name: "members", description: "Church directory / people records" },
+          { name: "households", description: "Family groupings and member linking" },
+          { name: "groups", description: "Group/ministry hierarchy and assignments" },
         ],
       },
     });

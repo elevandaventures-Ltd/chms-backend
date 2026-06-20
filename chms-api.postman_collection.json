@@ -1,4 +1,4 @@
-0{
+{
   "info": {
     "name": "CHMS API",
     "description": "Church Management System API. Local base URL defaults to http://localhost:3001.\n\nAuth flow: POST /auth/login (or /auth/signup) returns an access_token. The Login request has a test script that saves it to the {{accessToken}} collection variable, which protected requests send as `Authorization: Bearer {{accessToken}}`.\n\nNote: role-assignment routes require the JWT to carry church_id + user_role claims (set by the Supabase access-token hook / a seeded user). A freshly signed-up user's token will hit 403 NoChurchContext.",
@@ -8,7 +8,9 @@
     { "key": "baseUrl", "value": "http://localhost:3001", "type": "string" },
     { "key": "accessToken", "value": "", "type": "string" },
     { "key": "userId", "value": "11111111-1111-1111-1111-111111111111", "type": "string" },
-    { "key": "roleKey", "value": "ministry_leader", "type": "string" }
+    { "key": "roleKey", "value": "ministry_leader", "type": "string" },
+    { "key": "memberId", "value": "22222222-2222-2222-2222-222222222222", "type": "string" },
+    { "key": "groupId", "value": "33333333-3333-3333-3333-333333333333", "type": "string" }
   ],
   "item": [
     {
@@ -44,7 +46,11 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"pastor@grace.test\",\n  \"password\": \"Passw0rd!23\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/signup", "host": ["{{baseUrl}}"], "path": ["auth", "signup"] }
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "signup"]
+            }
           }
         },
         {
@@ -73,7 +79,11 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"pastor@grace.test\",\n  \"password\": \"Passw0rd!23\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
           }
         },
         {
@@ -85,7 +95,11 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"pastor@grace.test\",\n  \"redirectTo\": \"http://localhost:3000/welcome\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/magic-link", "host": ["{{baseUrl}}"], "path": ["auth", "magic-link"] }
+            "url": {
+              "raw": "{{baseUrl}}/auth/magic-link",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "magic-link"]
+            }
           }
         },
         {
@@ -133,7 +147,11 @@
               "mode": "raw",
               "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"roleKey\": \"{{roleKey}}\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/role-assignments", "host": ["{{baseUrl}}"], "path": ["role-assignments"] }
+            "url": {
+              "raw": "{{baseUrl}}/role-assignments",
+              "host": ["{{baseUrl}}"],
+              "path": ["role-assignments"]
+            }
           }
         },
         {
@@ -141,7 +159,11 @@
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/role-assignments", "host": ["{{baseUrl}}"], "path": ["role-assignments"] }
+            "url": {
+              "raw": "{{baseUrl}}/role-assignments",
+              "host": ["{{baseUrl}}"],
+              "path": ["role-assignments"]
+            }
           }
         },
         {
@@ -153,6 +175,167 @@
               "raw": "{{baseUrl}}/role-assignments/{{userId}}/{{roleKey}}",
               "host": ["{{baseUrl}}"],
               "path": ["role-assignments", "{{userId}}", "{{roleKey}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Members – Operations",
+      "item": [
+        {
+          "name": "Import members (CSV, dry run)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "file", "type": "file", "src": [] }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/members/import?mode=skip&dryRun=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", "import"],
+              "query": [
+                { "key": "mode", "value": "skip" },
+                { "key": "dryRun", "value": "true" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Change member status",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"inactive\",\n  \"reason\": \"No recent contact\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/members/{{memberId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", "{{memberId}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "List at-risk alerts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/members/alerts?type=inactive&days=30",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", "alerts"],
+              "query": [
+                { "key": "type", "value": "inactive" },
+                { "key": "days", "value": "30" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Bulk action (assign ministry)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"assign-ministry\",\n  \"memberIds\": [\"{{memberId}}\"],\n  \"params\": { \"groupId\": \"{{groupId}}\" }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/members/bulk-action",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", "bulk-action"]
+            }
+          }
+        },
+        {
+          "name": "Export members (CSV)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/members/export?format=csv",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", "export"],
+              "query": [{ "key": "format", "value": "csv" }]
+            }
+          }
+        },
+        {
+          "name": "Export members (PDF)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/members/export?format=pdf",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", "export"],
+              "query": [{ "key": "format", "value": "pdf" }]
+            }
+          }
+        },
+        {
+          "name": "Geo clusters",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/members/geo-cluster",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", "geo-cluster"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search members",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/members/search?q=jon",
+              "host": ["{{baseUrl}}"],
+              "path": ["members", "search"],
+              "query": [{ "key": "q", "value": "jon" }]
+            }
+          }
+        },
+        {
+          "name": "Search groups",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/groups/search?q=youth",
+              "host": ["{{baseUrl}}"],
+              "path": ["groups", "search"],
+              "query": [{ "key": "q", "value": "youth" }]
+            }
+          }
+        },
+        {
+          "name": "Search households",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/households/search?q=smith",
+              "host": ["{{baseUrl}}"],
+              "path": ["households", "search"],
+              "query": [{ "key": "q", "value": "smith" }]
             }
           }
         }

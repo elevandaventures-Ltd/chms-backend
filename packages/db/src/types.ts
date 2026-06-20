@@ -1,10 +1,4 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
   graphql_public: {
@@ -107,6 +101,445 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      groups: {
+        Row: {
+          church_id: string
+          created_at: string
+          description: string | null
+          group_type: Database["public"]["Enums"]["group_type"]
+          id: string
+          name: string
+          parent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          description?: string | null
+          group_type: Database["public"]["Enums"]["group_type"]
+          id?: string
+          name: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          description?: string | null
+          group_type?: Database["public"]["Enums"]["group_type"]
+          id?: string
+          name?: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "groups_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "groups_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_members: {
+        Row: {
+          church_id: string
+          created_at: string
+          created_by: string | null
+          group_id: string
+          member_id: string
+          role: string | null
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          created_by?: string | null
+          group_id: string
+          member_id: string
+          role?: string | null
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          created_by?: string | null
+          group_id?: string
+          member_id?: string
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      households: {
+        Row: {
+          address: string | null
+          church_id: string
+          created_at: string
+          geo_lat: number | null
+          geo_lng: number | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          church_id: string
+          created_at?: string
+          geo_lat?: number | null
+          geo_lng?: number | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          church_id?: string
+          created_at?: string
+          geo_lat?: number | null
+          geo_lng?: number | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "households_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      household_members: {
+        Row: {
+          church_id: string
+          created_at: string
+          created_by: string | null
+          household_id: string
+          member_id: string
+          relationship_type: Database["public"]["Enums"]["household_relationship_type"]
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          created_by?: string | null
+          household_id: string
+          member_id: string
+          relationship_type: Database["public"]["Enums"]["household_relationship_type"]
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          created_by?: string | null
+          household_id?: string
+          member_id?: string
+          relationship_type?: Database["public"]["Enums"]["household_relationship_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_members_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_members_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_members_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_members_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      members: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          baptism_date: string | null
+          church_id: string
+          city: string | null
+          communion_date: string | null
+          confirmation_date: string | null
+          country: string | null
+          created_at: string
+          custom_fields: Json
+          date_of_birth: string | null
+          deleted_at: string | null
+          email: string | null
+          first_name: string
+          gender: string | null
+          geo_lat: number | null
+          geo_lng: number | null
+          id: string
+          joined_at: string | null
+          last_name: string | null
+          marital_status: string | null
+          neighbourhood: string | null
+          notes: string | null
+          ordination_date: string | null
+          phone: string | null
+          photo_url: string | null
+          postal_code: string | null
+          preferred_name: string | null
+          spiritual_milestones: Json
+          state_region: string | null
+          status: Database["public"]["Enums"]["member_status"]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          baptism_date?: string | null
+          church_id: string
+          city?: string | null
+          communion_date?: string | null
+          confirmation_date?: string | null
+          country?: string | null
+          created_at?: string
+          custom_fields?: Json
+          date_of_birth?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          first_name: string
+          gender?: string | null
+          geo_lat?: number | null
+          geo_lng?: number | null
+          id?: string
+          joined_at?: string | null
+          last_name?: string | null
+          marital_status?: string | null
+          neighbourhood?: string | null
+          notes?: string | null
+          ordination_date?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          postal_code?: string | null
+          preferred_name?: string | null
+          spiritual_milestones?: Json
+          state_region?: string | null
+          status?: Database["public"]["Enums"]["member_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          baptism_date?: string | null
+          church_id?: string
+          city?: string | null
+          communion_date?: string | null
+          confirmation_date?: string | null
+          country?: string | null
+          created_at?: string
+          custom_fields?: Json
+          date_of_birth?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          first_name?: string
+          gender?: string | null
+          geo_lat?: number | null
+          geo_lng?: number | null
+          id?: string
+          joined_at?: string | null
+          last_name?: string | null
+          marital_status?: string | null
+          neighbourhood?: string | null
+          notes?: string | null
+          ordination_date?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          postal_code?: string | null
+          preferred_name?: string | null
+          spiritual_milestones?: Json
+          state_region?: string | null
+          status?: Database["public"]["Enums"]["member_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "members_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      member_timeline: {
+        Row: {
+          church_id: string
+          created_at: string
+          created_by: string | null
+          event_type: Database["public"]["Enums"]["member_event_type"]
+          id: string
+          member_id: string
+          metadata: Json
+          occurred_at: string
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          created_by?: string | null
+          event_type: Database["public"]["Enums"]["member_event_type"]
+          id?: string
+          member_id: string
+          metadata?: Json
+          occurred_at?: string
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          created_by?: string | null
+          event_type?: Database["public"]["Enums"]["member_event_type"]
+          id?: string
+          member_id?: string
+          metadata?: Json
+          occurred_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_timeline_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_timeline_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_timeline_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      member_alerts: {
+        Row: {
+          alert_type: Database["public"]["Enums"]["member_alert_type"]
+          church_id: string
+          created_at: string
+          days_inactive: number
+          detected_at: string
+          id: string
+          last_activity_at: string | null
+          member_id: string
+          resolved_at: string | null
+          status: string
+          threshold_days: number
+          updated_at: string
+        }
+        Insert: {
+          alert_type?: Database["public"]["Enums"]["member_alert_type"]
+          church_id: string
+          created_at?: string
+          days_inactive: number
+          detected_at?: string
+          id?: string
+          last_activity_at?: string | null
+          member_id: string
+          resolved_at?: string | null
+          status?: string
+          threshold_days: number
+          updated_at?: string
+        }
+        Update: {
+          alert_type?: Database["public"]["Enums"]["member_alert_type"]
+          church_id?: string
+          created_at?: string
+          days_inactive?: number
+          detected_at?: string
+          id?: string
+          last_activity_at?: string | null
+          member_id?: string
+          resolved_at?: string | null
+          status?: string
+          threshold_days?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_alerts_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_alerts_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       roles: {
         Row: {
@@ -300,7 +733,24 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      member_activity: {
+        Row: {
+          church_id: string | null
+          deleted_at: string | null
+          last_activity_at: string | null
+          member_id: string | null
+          status: Database["public"]["Enums"]["member_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "members_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       create_church_with_owner: {
@@ -320,6 +770,28 @@ export type Database = {
       }
     }
     Enums: {
+      group_type: "campus" | "department" | "ministry" | "small_group"
+      household_relationship_type: "parent" | "child" | "spouse" | "sibling"
+      member_alert_type: "inactive"
+      member_event_type:
+        | "check_in"
+        | "giving"
+        | "group_join"
+        | "group_leave"
+        | "event_attendance"
+        | "pastoral_note"
+        | "status_change"
+        | "milestone"
+        | "communication"
+        | "note"
+      member_status:
+        | "prospect"
+        | "visitor"
+        | "active"
+        | "inactive"
+        | "transferred"
+        | "deceased"
+        | "archived"
       user_role:
         | "owner"
         | "admin"
@@ -358,10 +830,8 @@ export type Tables<
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -458,6 +928,30 @@ export const Constants = {
   },
   public: {
     Enums: {
+      group_type: ["campus", "department", "ministry", "small_group"],
+      household_relationship_type: ["parent", "child", "spouse", "sibling"],
+      member_alert_type: ["inactive"],
+      member_event_type: [
+        "check_in",
+        "giving",
+        "group_join",
+        "group_leave",
+        "event_attendance",
+        "pastoral_note",
+        "status_change",
+        "milestone",
+        "communication",
+        "note",
+      ],
+      member_status: [
+        "prospect",
+        "visitor",
+        "active",
+        "inactive",
+        "transferred",
+        "deceased",
+        "archived",
+      ],
       user_role: [
         "owner",
         "admin",
@@ -470,4 +964,3 @@ export const Constants = {
     },
   },
 } as const
-
